@@ -1,6 +1,7 @@
 -- file : application.lua
 local module = {}  
 m = nil
+id = node.chipid()
 
 red = 0
 green = 0
@@ -20,8 +21,8 @@ pwm.setduty(3,blue)
 
 -- Sends a simple ping to the broker
 local function send_ping()  
-    m:publish(config.ENDPOINT .. "heartbeat",cjson.encode({
-        id=config.ID,
+    m:publish("iot/heartbeat",cjson.encode({
+        id=id,
         state={
             red=red,
             green=green,
@@ -32,13 +33,13 @@ end
 
 -- Sends my id to the broker for registration
 local function register_myself()  
-    m:subscribe(config.ENDPOINT .. "things/" .. config.ID,0,function(conn)
+    m:subscribe( "iot/things/" .. id,0,function(conn)
         print("Successfully subscribed to data endpoint")
     end)
 end
 
 local function mqtt_start()  
-    m = mqtt.Client(config.ID, 120)
+    m = mqtt.Client(id, 120)
     -- register message callback beforehand
     m:on("message", function(conn, topic, data) 
       if data ~= nil then
@@ -62,7 +63,7 @@ local function mqtt_start()
       end
     end)
     -- Connect to broker
-    m:connect(config.HOST, config.PORT, 0, 1, function(con) 
+    m:connect("192.168.0.17", "1883", 0, 1, function(con) 
         register_myself()
         -- And then pings each 1000 milliseconds
         tmr.stop(6)
@@ -72,7 +73,7 @@ local function mqtt_start()
 end
 
 function module.start()  
-  mqtt_start()
+    mqtt_start()
 end
 
 return module
