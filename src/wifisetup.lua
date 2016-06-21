@@ -5,7 +5,9 @@ local module = {}
 local attempts = 0
 
 local function setup_mode()
-  print("Entering setup mode")
+  print("Entering setup mode, turnong on led")
+  gpio.mode(4,gpio.OUTPUT)
+  gpio.write(4,gpio.LOW)
   wifi.setmode(wifi.SOFTAP)
   require("http").start()
 end
