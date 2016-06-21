@@ -23,6 +23,7 @@ pwm.setduty(3,blue)
 local function send_ping()  
     m:publish("iot/heartbeat",cjson.encode({
         id=id,
+        config=config,
         state={
             red=red,
             green=green,
