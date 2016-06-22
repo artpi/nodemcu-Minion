@@ -8,23 +8,16 @@ local function http_start()
 		conn:on("receive",function(conn,payload)
 			json = string.match(payload, "{.*}")
 			ok, data = pcall(cjson.decode,json)
-			if json ~=nil and ok then
-				if data.action == "set-config" and data.config ~= nil then
-					file.open("config.json", "w")
-					file.writeline( cjson.encode( data.config ) )
-					file.close()
-					conn:send('HTTP/1.1 200 OK\n\n')
-				elseif data.action == "get-config" then
-					file.open("config.json")
-					current = file.readline()
-					file.close()
-					conn:send('HTTP/1.1 200 OK\n\n' .. current)
-				elseif application ~= nil and data ~= nil then
-                    print("http request")
+			if json ~=nil and ok and application ~= nil and data ~= nil then
+                print("http request  " .. json)
+                if data.action == "get-config" then
+			        file.open("config.json")
+			        current = file.readline()
+			        file.close()
+			        conn:send('HTTP/1.1 200 OK\n\n' .. current)
+				else
 					application.run( data )
 					conn:send('HTTP/1.1 200 OK\n\n' .. cjson.encode( application.get() ) )
-				else
-                    conn:send('HTTP/1.1 400 Bad json payload or no application\n\n')
 				end
 			else
 				conn:send('HTTP/1.1 400 Bad json payload\n\n')

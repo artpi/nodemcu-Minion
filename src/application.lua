@@ -32,6 +32,12 @@ local function get_response()
 end
 
 local function process_command( payload )
+    if payload.action == "set-config" and payload.config ~= nil then
+        file.open("config.json", "w")
+        file.writeline( cjson.encode( payload.config ) )
+        file.close()
+    end
+
     if payload.action == "set" and payload.state ~= nil and payload.state.green ~= nil then
         state.green = payload.state.green
         pwm.setduty(2,state.green);
