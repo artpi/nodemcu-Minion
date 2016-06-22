@@ -8,7 +8,7 @@ app_handler = require("application");
 ok, config = pcall(cjson.decode,configJson);
 if ok then
     print( "Got config " .. configJson );
-    if config.connection == "mqtt" then
+    if config.connection == "mqtt" and config.mqtt_addr ~= nil and config.mqtt_port ~= nil then
     	app_handler.setup();
 		wifisetup.start( require("mqtt-connection"), app_handler );
 	elseif config.connection == "http" then
