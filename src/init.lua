@@ -1,16 +1,23 @@
 -- file : init.lua
 
-state = {}
-
-file.open("config.json")
-configJson = file.readline()
-file.close()
-ok, config = pcall(cjson.decode,configJson)
+file.open("config.json");
+configJson = file.readline();
+file.close();
+wifisetup = require("wifi-setup");
+app_handler = require("application");
+ok, config = pcall(cjson.decode,configJson);
 if ok then
     print( "Got config " .. configJson );
-    app = require("application")
-	require("wifisetup").start()
+    if config.connection == "mqtt" then
+    	app_handler.setup();
+		wifisetup.start( require("mqtt-connection"), app_handler );
+	elseif config.connection == "http" then
+		app_handler.setup();
+		wifisetup.start( require("http-connection"), app_handler );
+	else
+		wifisetup.setup_mode();
+	end
 else
     print( "BAD config ");
-	require("wifisetup").setup_mode()
+	wifisetup.setup_mode();
 end
