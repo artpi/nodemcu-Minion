@@ -29,7 +29,7 @@ local function mqtt_start()
       end
     end)
     -- Connect to broker
-    m:connect("192.168.0.17", "1883", 0, 1, function(con) 
+    m:connect(config.mqtt_addr, config.mqtt_port, 0, 1, function(con) 
         register_myself()
         -- And then pings each 1000 milliseconds
         tmr.stop(6)
