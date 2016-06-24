@@ -4,25 +4,46 @@ local id = node.chipid()
 
 local state = {}
 
-local pin = {
-    power = 3,
-    switch = 2
-}
+local pin = {}
 
-local function check_switch()
+local function switch_check()
     status = 1 - gpio.read( pin.switch );
     if status ~= state.switch then
         state.switch = status;
-        gpio.write( pin.power, state.switch );
+        state.power=state.switch;
+        gpio.write( pin.power, state.power );
     end
 end
 
-local function setup( config )
-    state.power = 0;
-    state.switch = 0;
-    gpio.mode(pin.switch, gpio.INPUT, gpio.PULLUP);
-    gpio.write(pin.power, gpio.LOW);
-    tmr.alarm(4, 500, 1, check_switch );
+local function setup()
+    if config.mode == nil then
+    elseif config.mode == "switch" then
+        pin.power = 3;
+        pin.switch = 2;
+
+        state.power = 0;
+        state.switch = 0;
+        gpio.mode(pin.switch, gpio.INPUT, gpio.PULLUP);
+        gpio.write(pin.power, gpio.LOW);
+        tmr.alarm(4, 500, 1, switch_check );
+    elseif config.mode == "rgb" then
+        pin.red = 1;
+        pin.green = 2;
+        pin.blue = 3;
+
+        pwm.setup(pin.red,1000,1023);
+        pwm.setup(pin.green,1000,1023);
+        pwm.setup(pin.blue,1000,1023);
+
+        state.red = 0
+        state.green = 0
+        state.blue = 0
+
+        pwm.setduty(pin.red,state.red);
+        pwm.setduty(pin.green,state.green);
+        pwm.setduty(pin.blue,state.blue);
+    end
+
 end
 
 
@@ -36,7 +57,7 @@ local function get_response()
 end
 
 local function set_pin_state( payload, key )
-    if payload.state[key] ~= nil then
+    if pin[key] ~= nil and payload.state[key] ~= nil then
         state[key] = payload.state[key];
         if state[key] == 1 then
             gpio.write(pin[key], gpio.HIGH);
@@ -46,6 +67,15 @@ local function set_pin_state( payload, key )
     end
 end
 
+local function set_pin_state_pwm( payload, key )
+    if pin[key] ~= nil and payload.state[key] ~= nil then
+        state[key]= payload.state[key];
+        pwm.setduty(pin[key],state[key]);
+    end
+end
+
+
+
 local function process_command( payload )
     if payload.action == "set-config" and payload.config ~= nil then
         file.open("config.json", "w")
@@ -54,7 +84,13 @@ local function process_command( payload )
     end
 
     if payload.action == "set" and payload.state ~= nil then
+        --Will work only for switch mode
         set_pin_state( payload, 'power' );
+
+        --Will work only for rgb mode
+        set_pin_state_pwm( payload, 'red' );
+        set_pin_state_pwm( payload, 'green' );
+        set_pin_state_pwm( payload, 'blue' );
     end
 end
 
