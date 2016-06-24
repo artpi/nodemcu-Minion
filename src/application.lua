@@ -5,35 +5,24 @@ local id = node.chipid()
 local state = {}
 
 local pin = {
-    d4 = 4,
-    d5 = 5,
-    d6 = 6
+    power = 3,
+    switch = 2
 }
 
+local function check_switch()
+    status = 1 - gpio.read( pin.switch );
+    if status ~= state.switch then
+        state.switch = status;
+        gpio.write( pin.power, state.switch );
+    end
+end
+
 local function setup( config )
-    gpio.mode(pin.d4,gpio.OUTPUT);
-    gpio.mode(pin.d5,gpio.OUTPUT);
-    gpio.mode(pin.d6,gpio.OUTPUT);
-
-    pwm.setup(1,1000,1023);
-    pwm.setup(2,1000,1023);
-    pwm.setup(3,1000,1023);
-
-    state.red = 0
-    state.green = 0
-    state.blue = 0
-
-    pwm.setduty(1,state.red);
-    pwm.setduty(2,state.green);
-    pwm.setduty(3,state.blue);
-
-    state.d4 = 0;
-    state.d5 = 0;
-    state.d6 = 0;
-
-    gpio.write(pin.d4, gpio.HIGH)
-    gpio.write(pin.d5, gpio.HIGH)
-    gpio.write(pin.d6, gpio.HIGH)
+    state.power = 0;
+    state.switch = 0;
+    gpio.mode(pin.switch, gpio.INPUT, gpio.PULLUP);
+    gpio.write(pin.power, gpio.LOW);
+    tmr.alarm(4, 500, 1, check_switch );
 end
 
 
@@ -50,9 +39,9 @@ local function set_pin_state( payload, key )
     if payload.state[key] ~= nil then
         state[key] = payload.state[key];
         if state[key] == 1 then
-            gpio.write(pin[key], gpio.LOW);
-        elseif state[key] == 0 then
             gpio.write(pin[key], gpio.HIGH);
+        elseif state[key] == 0 then
+            gpio.write(pin[key], gpio.LOW);
         end
     end
 end
@@ -65,25 +54,7 @@ local function process_command( payload )
     end
 
     if payload.action == "set" and payload.state ~= nil then
-        if payload.state.green ~= nil then
-            state.green = payload.state.green;
-            pwm.setduty(2,state.green);
-        end
-
-        if payload.state.red ~= nil then
-            state.red = payload.state.red;
-            pwm.setduty(1,state.red);
-        end
-
-        if payload.state.blue ~= nil then
-            state.blue = payload.state.blue;
-            pwm.setduty(3,state.blue);
-        end
-
-        set_pin_state( payload, 'd4' );
-        set_pin_state( payload, 'd5' );
-        set_pin_state( payload, 'd6' );
-
+        set_pin_state( payload, 'power' );
     end
 end
 
