@@ -25,7 +25,7 @@ local function setup()
         state.switch = 0;
         gpio.mode(pin.switch, gpio.INPUT, gpio.PULLUP);
         gpio.write(pin.power, gpio.LOW);
-        tmr.alarm(4, 500, 1, switch_check );
+        --tmr.alarm(4, 500, 1, switch_check );
     elseif config.mode == "rgb" then
         pin.red = 1;
         pin.green = 2;
