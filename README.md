@@ -8,6 +8,8 @@ Just start - the device will start an access point you can connect to write sett
 The idea is that most of the use-cases of iot devices are very similar.
 This is intended to provide plug & play headstart on almost every project.
 
+[Nodemcu-Minion plays nicely with my own Smarthome setup](https://github.com/artpi/SmartPi)
+
 
 ## Features
 
