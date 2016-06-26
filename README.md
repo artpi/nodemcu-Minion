@@ -31,9 +31,15 @@ This is intended to provide plug & play headstart on almost every project.
 8. Connect your hardware
 9. Profit
 
+## Working modes
+
+- Controlling RGB LED strip
+- Controlling lights (any device) with a relay
+
 ### Config
 
 Config has following keys:
+- `"mode"` - { switch | rgb } - mode to operate
 - `"SSID"` - array of network name - password values, Ex: `"SSID":{"network-name":"password"}`
 - `"connection"` - { mqtt | http } - connection protocol to be used
 - `"mqtt_addr"` - IP / url of your mqtt broker
